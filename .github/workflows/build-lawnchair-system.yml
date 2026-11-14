@@ -1,6 +1,7 @@
 name: Build Lawnchair as System Launcher
 
-# 仅手动触发。构建成功后自动发布到 GitHub Release。
+# 只允许手动触发（Actions 页面 Run workflow 或 workflow_dispatch API）。
+# 不监听 push / pull_request / tag，避免任何自动编译。
 # 产物：包名 com.android.launcher3 的 Lawnchair（lawnWithQuickstep + SYSTEM_LAUNCHER=1），
 #       用于替换固件 system_ext/priv-app/Launcher3QuickStep/Launcher3QuickStep.apk。
 
@@ -17,13 +18,15 @@ on:
           - assembleLawnWithQuickstepDebug
           - assembleAospWithQuickstepRelease
       release_version:
-        description: '版本号，只填数字（如 1.1），tag 自动为 v1.1'
+        description: '版本号（只填数字，如 1.1，tag 自动为 v1.1；留空则用 build-<run_number>）'
         required: false
         default: ''
+        type: string
       version_code:
         description: 'versionCode（留空则 34000 + run_number）'
         required: false
         default: ''
+        type: string
       upload_mapping:
         description: '同时上传 R8 mapping.txt'
         required: false
@@ -36,11 +39,6 @@ permissions:
 env:
   GRADLE_OPTS: '-Dorg.gradle.jvmargs=-Xmx4g -Dfile.encoding=UTF-8'
   SYSTEM_LAUNCHER: '1'
-  TASK: ${{ inputs.variant }}
-  TAG_NAME: ${{ inputs.release_version != '' && format('v{0}', inputs.release_version) || format('build-{0}', github.run_number) }}
-  # 与版本联动：APK 的 versionName = "13 <tag>"（如 13 v1.1），versionCode = 34000 + run_number
-  SYSTEM_LAUNCHER_TAG: ${{ inputs.release_version != '' && format('v{0}', inputs.release_version) || format('build-{0}', github.run_number) }}
-  SYSTEM_LAUNCHER_VERSION_CODE: ${{ inputs.version_code != '' && inputs.version_code || 34000 + github.run_number }}
 
 jobs:
   build:
@@ -48,12 +46,29 @@ jobs:
     timeout-minutes: 90
 
     steps:
-      - name: 校验版本号格式
-        if: ${{ inputs.release_version != '' }}
+      - name: 计算版本信息
         run: |
-          if ! echo "${{ inputs.release_version }}" | grep -Eq '^[0-9]+(\.[0-9]+)*$'; then
-            echo "::error::release_version 只能填数字和点，例如 1.1"; exit 1
-          fi
+          set -e
+          RV='${{ inputs.release_version }}'
+          VC='${{ inputs.version_code }}'
+          if [ -n "$RV" ]; then TAG="v$RV"; else TAG="build-${{ github.run_number }}"; fi
+          if [ -n "$VC" ]; then CODE="$VC"; else CODE=$((34000 + ${{ github.run_number }})); fi
+          {
+            echo "TASK=${{ inputs.variant }}"
+            echo "TAG_NAME=$TAG"
+            echo "SYSTEM_LAUNCHER_TAG=$TAG"
+            echo "SYSTEM_LAUNCHER_VERSION_CODE=$CODE"
+            echo "RELEASE_VERSION=$RV"
+          } >> "$GITHUB_ENV"
+          echo "task=${{ inputs.variant }} tag=$TAG versionCode=$CODE"
+
+      - name: 校验版本号格式
+        run: |
+          RV='${{ inputs.release_version }}'
+          [ -z "$RV" ] && { echo "未填 release_version，使用 build-<run_number>"; exit 0; }
+          echo "$RV" | grep -Eq '^[0-9]+(\.[0-9]+)*$' \
+            || { echo "::error::release_version 只能填数字和点，例如 1.1"; exit 1; }
+          echo "release_version OK: $RV"
 
       - name: Checkout (含子模块)
         uses: actions/checkout@v4
@@ -110,7 +125,7 @@ jobs:
             echo "未配置 KEYSTORE_BASE64，使用 AGP debug keystore 签名"
           fi
 
-      - name: 构建 ${{ env.TASK }}
+      - name: 构建 (assembly)
         run: |
           chmod +x gradlew
           ./gradlew "$TASK" --stacktrace --no-daemon
@@ -176,6 +191,11 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: 计算 tag
+        run: |
+          RV='${{ inputs.release_version }}'
+          if [ -n "$RV" ]; then echo "TAG_NAME=v$RV" >> "$GITHUB_ENV"; else echo "TAG_NAME=build-${{ github.run_number }}" >> "$GITHUB_ENV"; fi
+
       - name: 下载 APK artifact
         uses: actions/download-artifact@v4
         with:
@@ -192,7 +212,7 @@ jobs:
 
             - 包名：`com.android.launcher3`
             - HOME：`app.lawnchair.LawnchairLauncher`
-            - 版本：`${{ env.SYSTEM_LAUNCHER_TAG }}`
+            - 版本：`${{ env.TAG_NAME }}`
             - Gradle 任务：`${{ inputs.variant }}`
             - 构建号：`#${{ github.run_number }}`，commit `${{ github.sha }}`
 
