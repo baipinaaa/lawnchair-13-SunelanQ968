@@ -16,8 +16,8 @@ on:
           - assembleLawnWithQuickstepRelease
           - assembleLawnWithQuickstepDebug
           - assembleAospWithQuickstepRelease
-      release_tag:
-        description: 'Release tag（留空则用 build-<run_number>）'
+      release_version:
+        description: '版本号，只填数字（如 1.1），tag 自动为 v1.1'
         required: false
         default: ''
       version_code:
@@ -37,9 +37,9 @@ env:
   GRADLE_OPTS: '-Dorg.gradle.jvmargs=-Xmx4g -Dfile.encoding=UTF-8'
   SYSTEM_LAUNCHER: '1'
   TASK: ${{ inputs.variant }}
-  TAG_NAME: ${{ inputs.release_tag != '' && inputs.release_tag || format('build-{0}', github.run_number) }}
-  # 与 tag 联动：APK 的 versionName = "13 <tag>"，versionCode = 34000 + run_number
-  SYSTEM_LAUNCHER_TAG: ${{ inputs.release_tag != '' && inputs.release_tag || format('build-{0}', github.run_number) }}
+  TAG_NAME: ${{ inputs.release_version != '' && format('v{0}', inputs.release_version) || format('build-{0}', github.run_number) }}
+  # 与版本联动：APK 的 versionName = "13 <tag>"（如 13 v1.1），versionCode = 34000 + run_number
+  SYSTEM_LAUNCHER_TAG: ${{ inputs.release_version != '' && format('v{0}', inputs.release_version) || format('build-{0}', github.run_number) }}
   SYSTEM_LAUNCHER_VERSION_CODE: ${{ inputs.version_code != '' && inputs.version_code || 34000 + github.run_number }}
 
 jobs:
@@ -48,6 +48,13 @@ jobs:
     timeout-minutes: 90
 
     steps:
+      - name: 校验版本号格式
+        if: ${{ inputs.release_version != '' }}
+        run: |
+          if ! echo "${{ inputs.release_version }}" | grep -Eq '^[0-9]+(\.[0-9]+)*$'; then
+            echo "::error::release_version 只能填数字和点，例如 1.1"; exit 1
+          fi
+
       - name: Checkout (含子模块)
         uses: actions/checkout@v4
         with:
