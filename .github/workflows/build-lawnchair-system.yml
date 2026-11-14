@@ -1,0 +1,188 @@
+name: Build Lawnchair as System Launcher
+
+# 仅手动触发。构建成功后自动发布到 GitHub Release。
+# 产物：包名 com.android.launcher3 的 Lawnchair（lawnWithQuickstep + SYSTEM_LAUNCHER=1），
+#       用于替换固件 system_ext/priv-app/Launcher3QuickStep/Launcher3QuickStep.apk。
+
+on:
+  workflow_dispatch:
+    inputs:
+      variant:
+        description: 'Gradle 任务'
+        required: true
+        default: 'assembleLawnWithQuickstepRelease'
+        type: choice
+        options:
+          - assembleLawnWithQuickstepRelease
+          - assembleLawnWithQuickstepDebug
+          - assembleAospWithQuickstepRelease
+      release_tag:
+        description: 'Release tag（留空则用 build-<run_number>）'
+        required: false
+        default: ''
+      upload_mapping:
+        description: '同时上传 R8 mapping.txt'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+env:
+  GRADLE_OPTS: '-Dorg.gradle.jvmargs=-Xmx4g -Dfile.encoding=UTF-8'
+  SYSTEM_LAUNCHER: '1'
+  TASK: ${{ inputs.variant }}
+  TAG_NAME: ${{ inputs.release_tag != '' && inputs.release_tag || format('build-{0}', github.run_number) }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout (含子模块)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 1
+
+      - name: 校验子模块与预编译 jar
+        run: |
+          test -f platform_frameworks_libs_systemui/iconloaderlib/build.gradle \
+            || { echo "::error::子模块 platform_frameworks_libs_systemui 缺失"; exit 1; }
+          test -f prebuilts/libs/framework-13.jar \
+            || { echo "::error::缺少 framework-13.jar"; exit 1; }
+          echo "submodule OK"
+
+      - name: JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Android SDK 34
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
+          log-accepted-android-sdk-licenses: true
+
+      - name: Gradle 缓存
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-home-cache-cleanup: true
+
+      # release 默认用 AGP 自动生成的 debug keystore 签名（build.gradle:175）。
+      # 替换系统桌面后签名与固件不一致，设备上必须启用 CorePatch。
+      # 如需固定签名，在仓库 Secrets 里配齐下面 4 个即可覆盖：
+      #   KEYSTORE_BASE64 / KEYSTORE_PASSWORD / KEY_ALIAS / KEY_PASSWORD
+      - name: 可选：写入自定义签名配置
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$GITHUB_WORKSPACE/key.jks"
+            {
+              echo "storeFile=$GITHUB_WORKSPACE/key.jks"
+              echo "storePassword=$KEYSTORE_PASSWORD"
+              echo "keyAlias=$KEY_ALIAS"
+              echo "keyPassword=$KEY_PASSWORD"
+            } > keystore.properties
+            echo "已启用自定义签名"
+          else
+            echo "未配置 KEYSTORE_BASE64，使用 AGP debug keystore 签名"
+          fi
+
+      - name: 构建 ${{ env.TASK }}
+        run: ./gradlew "$TASK" --stacktrace --no-daemon
+
+      - name: 定位并校验 APK
+        run: |
+          set -e
+          APK=$(find build/outputs/apk -name '*.apk' -type f | head -n 1)
+          test -n "$APK" || { echo "::error::未生成 APK"; exit 1; }
+          echo "APK=$APK" >> "$GITHUB_ENV"
+
+          APKSIGNER="$ANDROID_HOME/build-tools/34.0.0/apksigner"
+          AAPT2="$ANDROID_HOME/build-tools/34.0.0/aapt2"
+          BADGING=$("$AAPT2" dump badging "$APK")
+          PKG=$(echo "$BADGING" | sed -n "s/^package: name='\([^']*\)'.*/\1/p")
+          VER=$(echo "$BADGING" | sed -n "s/^package: name='[^']*' versionCode='\([^']*\)'.*/\1/p")
+          echo "PKG=$PKG" >> "$GITHUB_ENV"
+          echo "VER=$VER" >> "$GITHUB_ENV"
+          echo "$BADGING" | grep -E "^(package|launchable-activity)"
+          "$APKSIGNER" verify --print-certs "$APK" | head -20
+
+          if [ "$PKG" != "com.android.launcher3" ]; then
+            echo "::warning::包名 $PKG 不是 com.android.launcher3，不能用于替换系统桌面"
+          fi
+
+          {
+            echo "### 构建结果"
+            echo '```'
+            echo "task: $TASK"
+            echo "package: $PKG"
+            echo "versionCode: $VER"
+            echo "apk: $APK"
+            ls -lh "$APK"
+            echo '```'
+            echo "### 签名证书"
+            echo '```'
+            "$APKSIGNER" verify --print-certs "$APK" | head -12
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 上传 APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lawnchair-system-${{ github.run_number }}
+          path: build/outputs/apk/**/*.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: 上传 R8 mapping
+        if: ${{ inputs.upload_mapping }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: mapping-${{ github.run_number }}
+          path: build/outputs/mapping/**/*.txt
+          if-no-files-found: warn
+          retention-days: 7
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: 下载 APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: lawnchair-system-${{ github.run_number }}
+          path: dist
+
+      - name: 发布到 GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          name: Lawnchair system launcher ${{ env.TAG_NAME }}
+          body: |
+            Lawnchair（lawnWithQuickstep，`SYSTEM_LAUNCHER=1`）—— 替换 `system_ext/priv-app/Launcher3QuickStep/Launcher3QuickStep.apk` 用。
+
+            - 包名：`com.android.launcher3`
+            - HOME：`app.lawnchair.LawnchairLauncher`
+            - Gradle 任务：`${{ inputs.variant }}`
+            - 构建号：`#${{ github.run_number }}`，commit `${{ github.sha }}`
+
+            **安装前提**
+            1. Magisk 26+，模块目录 `system_ext/priv-app/Launcher3QuickStep/`（APK 改名 `Launcher3QuickStep.apk`）+ `oat/.replace`
+            2. LSPosed 启用 CorePatch，作用域勾「系统」，开启 BYPASS_VERIFICATION / USE_PREVIOUS_SIGNATURES / BYPASS_DIGEST / BYPASS_EXACT_SIGNATURE_MATCH / BYPASS_DOWNGRADE / ALLOW_HIDDEN_APIS_FOR_SYSTEM_APPS
+            3. 回滚：`touch /data/adb/modules/<module>/disable && reboot`
+
+            签名与固件不同，不启用 CorePatch 会因签名校验被拒（黑屏无桌面）。
+          files: |
+            dist/**/*.apk
+          fail_on_unmatched_files: true
+          draft: false
+          prerelease: false
