@@ -117,7 +117,11 @@ final def isReleaseBuild = ciBuild && ciRef.contains("alpha")
 final def devReleaseName = ciBuild ? "Dev (#${ciRunNumber})" : "Dev (${buildCommit})"
 final def version = "13"
 final def releaseName = "Alpha 1"
-final def versionDisplayName = "${version} ${isReleaseBuild ? releaseName : devReleaseName}"
+// 系统替换构建可用 SYSTEM_LAUNCHER_TAG 覆盖显示名称（与 Release tag 联动）
+final def systemLauncherTag = System.getenv("SYSTEM_LAUNCHER_TAG")
+final def versionDisplayName = systemLauncherTag
+        ? "${version} ${systemLauncherTag}"
+        : "${version} ${isReleaseBuild ? releaseName : devReleaseName}"
 final def majorVersion = versionDisplayName.split("\\.")[0]
 
 final def quickstepMinSdk = "32"
@@ -253,8 +257,13 @@ android {
             applicationId(asSystemLauncher ? 'com.android.launcher3' : 'app.lawnchair')
             testApplicationId 'com.android.launcher3.tests'
             if (asSystemLauncher) {
-                // 必须高于原厂 Launcher3QuickStep 的 versionCode(33)，避免降级拒绝
-                versionCode 34013
+                // 必须高于原厂 Launcher3QuickStep 的 versionCode(33)，避免降级拒绝。
+                // versionName 由顶部 versionDisplayName 根据 SYSTEM_LAUNCHER_TAG 统一生成；
+                // 这里只需保证 versionCode 单调递增：优先 SYSTEM_LAUNCHER_VERSION_CODE，
+                // 否则用 34000 + CI run number，本地构建回退 34013。
+                def systemVersionCode = System.getenv("SYSTEM_LAUNCHER_VERSION_CODE")
+                versionCode(systemVersionCode ? systemVersionCode.toInteger()
+                        : (ciRunNumber ? 34000 + ciRunNumber.toInteger() : 34013))
             }
             isDefault true
         }

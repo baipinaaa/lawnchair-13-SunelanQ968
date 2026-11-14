@@ -20,6 +20,10 @@ on:
         description: 'Release tag（留空则用 build-<run_number>）'
         required: false
         default: ''
+      version_code:
+        description: 'versionCode（留空则 34000 + run_number）'
+        required: false
+        default: ''
       upload_mapping:
         description: '同时上传 R8 mapping.txt'
         required: false
@@ -34,6 +38,9 @@ env:
   SYSTEM_LAUNCHER: '1'
   TASK: ${{ inputs.variant }}
   TAG_NAME: ${{ inputs.release_tag != '' && inputs.release_tag || format('build-{0}', github.run_number) }}
+  # 与 tag 联动：APK 的 versionName = "13 <tag>"，versionCode = 34000 + run_number
+  SYSTEM_LAUNCHER_TAG: ${{ inputs.release_tag != '' && inputs.release_tag || format('build-{0}', github.run_number) }}
+  SYSTEM_LAUNCHER_VERSION_CODE: ${{ inputs.version_code != '' && inputs.version_code || 34000 + github.run_number }}
 
 jobs:
   build:
@@ -113,9 +120,12 @@ jobs:
           BADGING=$("$AAPT2" dump badging "$APK")
           PKG=$(echo "$BADGING" | sed -n "s/^package: name='\([^']*\)'.*/\1/p")
           VER=$(echo "$BADGING" | sed -n "s/^package: name='[^']*' versionCode='\([^']*\)'.*/\1/p")
+          VNAME=$(echo "$BADGING" | sed -n "s/^package: name='[^']*' versionCode='[^']*' versionName='\([^']*\)'.*/\1/p")
           echo "PKG=$PKG" >> "$GITHUB_ENV"
           echo "VER=$VER" >> "$GITHUB_ENV"
+          echo "VNAME=$VNAME" >> "$GITHUB_ENV"
           echo "$BADGING" | grep -E "^(package|launchable-activity)"
+          echo "versionName: $VNAME (期望: 13 $SYSTEM_LAUNCHER_TAG)"
           "$APKSIGNER" verify --print-certs "$APK" | head -20
 
           if [ "$PKG" != "com.android.launcher3" ]; then
@@ -128,6 +138,7 @@ jobs:
             echo "task: $TASK"
             echo "package: $PKG"
             echo "versionCode: $VER"
+            echo "versionName: $VNAME"
             echo "apk: $APK"
             ls -lh "$APK"
             echo '```'
@@ -174,6 +185,7 @@ jobs:
 
             - 包名：`com.android.launcher3`
             - HOME：`app.lawnchair.LawnchairLauncher`
+            - 版本：`${{ env.SYSTEM_LAUNCHER_TAG }}`
             - Gradle 任务：`${{ inputs.variant }}`
             - 构建号：`#${{ github.run_number }}`，commit `${{ github.sha }}`
 
