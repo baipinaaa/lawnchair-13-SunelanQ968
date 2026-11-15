@@ -142,10 +142,22 @@ public class ActivityManagerWrapper {
      */
     public @NonNull ThumbnailData getTaskThumbnail(int taskId, boolean isLowResolution) {
         TaskSnapshot snapshot = null;
+        final Object service = getService();
         try {
-            snapshot = getService().getTaskSnapshot(taskId, isLowResolution, false);
-        } catch (RemoteException e) {
-            Log.w(TAG, "Failed to retrieve task snapshot", e);
+            // Android 13 的 IActivityTaskManager 只有 getTaskSnapshot(int, boolean)。
+            // 本仓库的 framework-13.jar / systemUI 子模块按 Android 14 的三参数版本编译，
+            // 直接用三参数调用在 Android 13 设备上会抛 NoSuchMethodError，这里反射兼容两端。
+            snapshot = (TaskSnapshot) service.getClass()
+                    .getMethod("getTaskSnapshot", int.class, boolean.class)
+                    .invoke(service, taskId, isLowResolution);
+        } catch (NoSuchMethodException e) {
+            try {
+                snapshot = getService().getTaskSnapshot(taskId, isLowResolution, false);
+            } catch (RemoteException re) {
+                Log.w(TAG, "Failed to retrieve task snapshot", re);
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "Failed to retrieve task snapshot", t);
         }
         if (snapshot != null) {
             return new ThumbnailData(snapshot);
