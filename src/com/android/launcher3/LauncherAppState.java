@@ -31,6 +31,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.LauncherApps;
+import android.os.PowerManager;
+import android.os.SystemClock;
 import android.os.UserHandle;
 import android.util.Log;
 import android.util.SparseArray;
@@ -93,6 +95,10 @@ public class LauncherAppState implements SafeCloseable {
     @NonNull
     public final SparseArray<RemoteViews> mCachedRemoteViews = new SparseArray<>();
 
+    // Unisoc 定制的 PhoneWindowManager 在电源键短按时不直接息屏，而是发这条广播交给应用处理
+    // （原厂由 com.android.sos 响应）。该应用被 suspend 时无人处理，电源键就完全没有反应。
+    private static final String ACTION_POWER_KEY_SHORT_PRESS = "android.powerkey.short-press";
+
     public static LauncherAppState getInstance(final Context context) {
         return INSTANCE.get(context);
     }
@@ -103,6 +109,18 @@ public class LauncherAppState implements SafeCloseable {
 
     public Context getContext() {
         return mContext;
+    }
+
+    private void onPowerKeyShortPress(Intent intent) {
+        PowerManager powerManager = mContext.getSystemService(PowerManager.class);
+        if (powerManager == null) {
+            return;
+        }
+        try {
+            powerManager.goToSleep(SystemClock.uptimeMillis());
+        } catch (Throwable t) {
+            Log.w(Launcher.TAG, "goToSleep failed", t);
+        }
     }
 
     public LauncherAppState(Context context) {
@@ -117,6 +135,12 @@ public class LauncherAppState implements SafeCloseable {
         });
 
         mContext.getSystemService(LauncherApps.class).registerCallback(mModel);
+
+        // 兜底处理电源键短按：收到 Unisoc 的 short-press 广播就息屏。
+        SimpleBroadcastReceiver powerKeyReceiver =
+                new SimpleBroadcastReceiver(this::onPowerKeyShortPress);
+        powerKeyReceiver.register(mContext, ACTION_POWER_KEY_SHORT_PRESS);
+        mOnTerminateCallback.add(() -> mContext.unregisterReceiver(powerKeyReceiver));
 
         SimpleBroadcastReceiver modelChangeReceiver = new SimpleBroadcastReceiver(mModel::onBroadcastIntent);
         modelChangeReceiver.register(mContext, Intent.ACTION_LOCALE_CHANGED,
