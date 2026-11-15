@@ -277,7 +277,12 @@ public class SwipePipToHomeAnimator extends RectFSpringAnim {
                 PipSurfaceTransactionHelper.newSurfaceControlTransaction();
         final PictureInPictureSurfaceTransaction pipTx =
                 onAnimationUpdate(tx, new RectF(mDestinationBounds), END_PROGRESS);
-        pipTx.setShouldDisableCanAffectSystemUiFlags(true);
+        try {
+            pipTx.setShouldDisableCanAffectSystemUiFlags(true);
+        } catch (NoSuchMethodError e) {
+            // 只有 Android 14 (U) 才有这个 API，Android 13 (T) 上忽略
+            Log.w(TAG, "setShouldDisableCanAffectSystemUiFlags not available", e);
+        }
         return pipTx;
     }
 

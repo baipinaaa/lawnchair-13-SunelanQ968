@@ -78,16 +78,22 @@ public class ImageActionUtils {
      */
     public static void saveScreenshot(SystemUiProxy systemUiProxy, Bitmap screenshot,
             Rect screenshotBounds, Insets visibleInsets, Task.TaskKey task) {
-        ScreenshotRequest request =
-                new ScreenshotRequest.Builder(TAKE_SCREENSHOT_PROVIDED_IMAGE, SCREENSHOT_OVERVIEW)
-                .setTopComponent(task.sourceComponent)
-                .setTaskId(task.id)
-                .setUserId(task.userId)
-                .setBitmap(screenshot)
-                .setBoundsOnScreen(screenshotBounds)
-                .setInsets(visibleInsets)
-                .build();
-        systemUiProxy.takeScreenshot(request);
+        try {
+            ScreenshotRequest request =
+                    new ScreenshotRequest.Builder(TAKE_SCREENSHOT_PROVIDED_IMAGE, SCREENSHOT_OVERVIEW)
+                    .setTopComponent(task.sourceComponent)
+                    .setTaskId(task.id)
+                    .setUserId(task.userId)
+                    .setBitmap(screenshot)
+                    .setBoundsOnScreen(screenshotBounds)
+                    .setInsets(visibleInsets)
+                    .build();
+            systemUiProxy.takeScreenshot(request);
+        } catch (Throwable t) {
+            // Android 13 (T) 既没有 ScreenshotRequest.Builder，也没有对应的 SystemUI 接口
+            Log.w(TAG, "ScreenshotRequest API unavailable on this Android version", t);
+            systemUiProxy.takeScreenshotLegacy();
+        }
     }
 
     /**

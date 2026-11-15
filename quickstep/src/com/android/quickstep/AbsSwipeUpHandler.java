@@ -2077,7 +2077,12 @@ public abstract class AbsSwipeUpHandler<T extends StatefulActivity<S>, Q extends
             PictureInPictureSurfaceTransaction tx = new PictureInPictureSurfaceTransaction.Builder()
                     .setAlpha(0f)
                     .build();
-            tx.setShouldDisableCanAffectSystemUiFlags(false);
+            try {
+                tx.setShouldDisableCanAffectSystemUiFlags(false);
+            } catch (NoSuchMethodError e) {
+                // 只有 Android 14 (U) 才有这个 API，Android 13 (T) 上忽略
+                Log.w(TAG, "setShouldDisableCanAffectSystemUiFlags not available", e);
+            }
             int[] taskIds = TopTaskTracker.INSTANCE.get(mContext).getRunningSplitTaskIds();
             for (int taskId : taskIds) {
                 mRecentsAnimationController.setFinishTaskTransaction(taskId,

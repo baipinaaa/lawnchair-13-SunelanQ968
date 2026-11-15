@@ -5153,7 +5153,12 @@ public abstract class RecentsView<ACTIVITY_TYPE extends StatefulActivity<STATE_T
                     new PictureInPictureSurfaceTransaction.Builder()
                             .setAlpha(0f)
                             .build();
-            tx.setShouldDisableCanAffectSystemUiFlags(false);
+            try {
+                tx.setShouldDisableCanAffectSystemUiFlags(false);
+            } catch (NoSuchMethodError e) {
+                // 只有 Android 14 (U) 才有这个 API，Android 13 (T) 上忽略
+                Log.w(TAG, "setShouldDisableCanAffectSystemUiFlags not available", e);
+            }
             int[] taskIds = TopTaskTracker.INSTANCE.get(getContext()).getRunningSplitTaskIds();
             for (int taskId : taskIds) {
                 mRecentsAnimationController.setFinishTaskTransaction(taskId,

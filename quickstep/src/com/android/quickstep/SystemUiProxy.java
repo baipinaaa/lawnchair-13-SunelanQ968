@@ -419,7 +419,23 @@ public class SystemUiProxy implements ISystemUiProxy {
                 mSystemUiProxy.takeScreenshot(request);
             } catch (RemoteException e) {
                 Log.w(TAG, "Failed call takeScreenshot");
+            } catch (NoSuchMethodError e) {
+                Log.w(TAG, "takeScreenshot(ScreenshotRequest) not available", e);
+                takeScreenshotLegacy();
             }
+        }
+    }
+
+    /** Android 13 (T) 及更早版本的无参截图接口，通过反射调用；不存在时只记录日志。 */
+    public void takeScreenshotLegacy() {
+        if (mSystemUiProxy == null) {
+            return;
+        }
+        try {
+            java.lang.reflect.Method method = mSystemUiProxy.getClass().getMethod("takeScreenshot");
+            method.invoke(mSystemUiProxy);
+        } catch (Throwable t) {
+            Log.w(TAG, "Legacy takeScreenshot() not available on this Android version", t);
         }
     }
 
