@@ -44,9 +44,9 @@ class QuickstepInteractionHandler implements RemoteViews.InteractionHandler {
 
     private static final String TAG = "QuickstepInteractionHandler";
 
-    private final QuickstepLauncher mLauncher;
+    private final QuickstepLauncherAosp mLauncher;
 
-    QuickstepInteractionHandler(QuickstepLauncher launcher) {
+    QuickstepInteractionHandler(QuickstepLauncherAosp launcher) {
         mLauncher = launcher;
     }
 

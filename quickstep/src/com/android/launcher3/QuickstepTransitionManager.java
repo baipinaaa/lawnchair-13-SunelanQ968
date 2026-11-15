@@ -120,7 +120,7 @@ import com.android.launcher3.shortcuts.DeepShortcutView;
 import com.android.launcher3.statehandlers.DepthController;
 import com.android.launcher3.taskbar.LauncherTaskbarUIController;
 import com.android.launcher3.touch.PagedOrientationHandler;
-import com.android.launcher3.uioverrides.QuickstepLauncher;
+import com.android.launcher3.uioverrides.QuickstepLauncherAosp;
 import com.android.launcher3.util.ActivityOptionsWrapper;
 import com.android.launcher3.util.DynamicResource;
 import com.android.launcher3.util.ObjectWrapper;
@@ -214,7 +214,7 @@ public class QuickstepTransitionManager implements OnDeviceProfileChangeListener
     // Cross-fade duration between App Widget and App
     private static final int WIDGET_CROSSFADE_DURATION_MILLIS = 125;
 
-    protected final QuickstepLauncher mLauncher;
+    protected final QuickstepLauncherAosp mLauncher;
     protected final DragLayer mDragLayer;
 
     protected final Handler mHandler;

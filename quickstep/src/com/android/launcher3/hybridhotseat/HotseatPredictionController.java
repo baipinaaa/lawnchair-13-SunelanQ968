@@ -56,7 +56,7 @@ import com.android.launcher3.testing.TestLogging;
 import com.android.launcher3.testing.shared.TestProtocol;
 import com.android.launcher3.touch.ItemLongClickListener;
 import com.android.launcher3.uioverrides.PredictedAppIcon;
-import com.android.launcher3.uioverrides.QuickstepLauncher;
+import com.android.launcher3.uioverrides.QuickstepLauncherAosp;
 import com.android.launcher3.util.OnboardingPrefs;
 import com.android.launcher3.views.Snackbar;
 
@@ -71,7 +71,7 @@ import java.util.stream.Collectors;
  * pinning of predicted apps and manages replacement of predicted apps with user drag.
  */
 public class HotseatPredictionController implements DragController.DragListener,
-        SystemShortcut.Factory<QuickstepLauncher>, DeviceProfile.OnDeviceProfileChangeListener,
+        SystemShortcut.Factory<QuickstepLauncherAosp>, DeviceProfile.OnDeviceProfileChangeListener,
         DragSource, ViewGroup.OnHierarchyChangeListener {
 
     private static final int FLAG_UPDATE_PAUSED = 1 << 0;
@@ -81,7 +81,7 @@ public class HotseatPredictionController implements DragController.DragListener,
 
     private int mHotSeatItemsCount;
 
-    private QuickstepLauncher mLauncher;
+    private QuickstepLauncherAosp mLauncher;
     private final Hotseat mHotseat;
     private final Runnable mUpdateFillIfNotLoading = this::updateFillIfNotLoading;
 
@@ -119,7 +119,7 @@ public class HotseatPredictionController implements DragController.DragListener,
         return true;
     };
 
-    public HotseatPredictionController(QuickstepLauncher launcher) {
+    public HotseatPredictionController(QuickstepLauncherAosp launcher) {
         mLauncher = launcher;
         mHotseat = launcher.getHotseat();
         mHotSeatItemsCount = mLauncher.getDeviceProfile().numShownHotseatIcons;
@@ -394,7 +394,7 @@ public class HotseatPredictionController implements DragController.DragListener,
 
     @Nullable
     @Override
-    public SystemShortcut<QuickstepLauncher> getShortcut(QuickstepLauncher activity,
+    public SystemShortcut<QuickstepLauncherAosp> getShortcut(QuickstepLauncherAosp activity,
             ItemInfo itemInfo, View originalView) {
         if (itemInfo.container != LauncherSettings.Favorites.CONTAINER_HOTSEAT_PREDICTION) {
             return null;
@@ -482,9 +482,9 @@ public class HotseatPredictionController implements DragController.DragListener,
         }
     }
 
-    private class PinPrediction extends SystemShortcut<QuickstepLauncher> {
+    private class PinPrediction extends SystemShortcut<QuickstepLauncherAosp> {
 
-        private PinPrediction(QuickstepLauncher target, ItemInfo itemInfo, View originalView) {
+        private PinPrediction(QuickstepLauncherAosp target, ItemInfo itemInfo, View originalView) {
             super(R.drawable.ic_pin, R.string.pin_prediction, target,
                     itemInfo, originalView);
         }

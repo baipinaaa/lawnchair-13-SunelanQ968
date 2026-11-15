@@ -42,7 +42,7 @@ import com.android.launcher3.anim.AnimatorPlaybackController;
 import com.android.launcher3.config.FeatureFlags;
 import com.android.launcher3.states.StateAnimationConfig;
 import com.android.launcher3.taskbar.LauncherTaskbarUIController;
-import com.android.launcher3.uioverrides.QuickstepLauncher;
+import com.android.launcher3.uioverrides.QuickstepLauncherAosp;
 import com.android.launcher3.util.VibratorWrapper;
 import com.android.quickstep.SystemUiProxy;
 import com.android.quickstep.util.AnimatorControllerWithResistance;
@@ -123,7 +123,7 @@ public class NoButtonNavbarToOverviewTouchController extends PortraitStatesTouch
     public void onDragStart(boolean start, float startDisplacement) {
         if (mLauncher.isInState(ALL_APPS)) {
             LauncherTaskbarUIController controller =
-                    ((QuickstepLauncher) mLauncher).getTaskbarUIController();
+                    ((QuickstepLauncherAosp) mLauncher).getTaskbarUIController();
             if (controller != null) {
                 controller.setShouldDelayLauncherStateAnim(true);
             }
@@ -160,7 +160,7 @@ public class NoButtonNavbarToOverviewTouchController extends PortraitStatesTouch
     @Override
     public void onDragEnd(float velocity) {
         LauncherTaskbarUIController controller =
-                ((QuickstepLauncher) mLauncher).getTaskbarUIController();
+                ((QuickstepLauncherAosp) mLauncher).getTaskbarUIController();
         if (controller != null) {
             controller.setShouldDelayLauncherStateAnim(false);
         }

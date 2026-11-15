@@ -15,7 +15,7 @@
  */
 package com.android.quickstep;
 
-import static com.android.launcher3.uioverrides.QuickstepLauncher.GO_LOW_RAM_RECENTS_ENABLED;
+import static com.android.launcher3.uioverrides.QuickstepLauncherAosp.GO_LOW_RAM_RECENTS_ENABLED;
 import static com.android.launcher3.util.DisplayController.CHANGE_DENSITY;
 
 import android.annotation.Nullable;

@@ -58,7 +58,7 @@ import com.android.quickstep.views.RecentsView;
 public final class RecentsViewStateController extends
         BaseRecentsViewStateController<LauncherRecentsView> {
 
-    public RecentsViewStateController(QuickstepLauncher launcher) {
+    public RecentsViewStateController(QuickstepLauncherAosp launcher) {
         super(launcher);
     }
 

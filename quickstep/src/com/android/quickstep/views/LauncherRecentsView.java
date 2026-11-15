@@ -39,7 +39,7 @@ import com.android.launcher3.logging.StatsLogManager;
 import com.android.launcher3.statehandlers.DepthController;
 import com.android.launcher3.statehandlers.DesktopVisibilityController;
 import com.android.launcher3.statemanager.StateManager.StateListener;
-import com.android.launcher3.uioverrides.QuickstepLauncher;
+import com.android.launcher3.uioverrides.QuickstepLauncherAosp;
 import com.android.launcher3.util.PendingSplitSelectInfo;
 import com.android.launcher3.util.SplitConfigurationOptions;
 import com.android.launcher3.util.SplitConfigurationOptions.SplitSelectSource;
@@ -54,7 +54,7 @@ import com.android.systemui.shared.recents.model.Task;
  * {@link RecentsView} used in Launcher activity
  */
 @TargetApi(Build.VERSION_CODES.O)
-public class LauncherRecentsView extends RecentsView<QuickstepLauncher, LauncherState>
+public class LauncherRecentsView extends RecentsView<QuickstepLauncherAosp, LauncherState>
         implements StateListener<LauncherState> {
 
     public LauncherRecentsView(Context context) {

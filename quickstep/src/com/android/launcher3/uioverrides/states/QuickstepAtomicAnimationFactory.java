@@ -62,7 +62,7 @@ import com.android.launcher3.LauncherState;
 import com.android.launcher3.Workspace;
 import com.android.launcher3.states.StateAnimationConfig;
 import com.android.launcher3.touch.AllAppsSwipeController;
-import com.android.launcher3.uioverrides.QuickstepLauncher;
+import com.android.launcher3.uioverrides.QuickstepLauncherAosp;
 import com.android.launcher3.util.DisplayController;
 import com.android.quickstep.util.RecentsAtomicAnimationFactory;
 import com.android.quickstep.util.SplitAnimationTimings;
@@ -72,7 +72,7 @@ import com.android.quickstep.views.RecentsView;
  * Animation factory for quickstep specific transitions
  */
 public class QuickstepAtomicAnimationFactory extends
-        RecentsAtomicAnimationFactory<QuickstepLauncher, LauncherState> {
+        RecentsAtomicAnimationFactory<QuickstepLauncherAosp, LauncherState> {
 
     // Scale recents takes before animating in
     private static final float RECENTS_PREPARE_SCALE = 1.33f;
@@ -87,7 +87,7 @@ public class QuickstepAtomicAnimationFactory extends
     // cache the value.
     private int mHintToNormalDuration = -1;
 
-    public QuickstepAtomicAnimationFactory(QuickstepLauncher activity) {
+    public QuickstepAtomicAnimationFactory(QuickstepLauncherAosp activity) {
         super(activity);
     }
 

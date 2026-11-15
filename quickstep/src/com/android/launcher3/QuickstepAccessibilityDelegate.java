@@ -21,13 +21,13 @@ import android.view.View;
 import com.android.launcher3.accessibility.LauncherAccessibilityDelegate;
 import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.uioverrides.PredictedAppIcon;
-import com.android.launcher3.uioverrides.QuickstepLauncher;
+import com.android.launcher3.uioverrides.QuickstepLauncherAosp;
 
 import java.util.List;
 
 public class QuickstepAccessibilityDelegate extends LauncherAccessibilityDelegate {
 
-    public QuickstepAccessibilityDelegate(QuickstepLauncher launcher) {
+    public QuickstepAccessibilityDelegate(QuickstepLauncherAosp launcher) {
         super(launcher);
         mActions.put(PIN_PREDICTION, new LauncherAction(
                 PIN_PREDICTION, R.string.pin_prediction, KeyEvent.KEYCODE_P));
@@ -44,7 +44,7 @@ public class QuickstepAccessibilityDelegate extends LauncherAccessibilityDelegat
 
     @Override
     protected boolean performAction(View host, ItemInfo item, int action, boolean fromKeyboard) {
-        QuickstepLauncher launcher = (QuickstepLauncher) mContext;
+        QuickstepLauncherAosp launcher = (QuickstepLauncherAosp) mContext;
         if (action == PIN_PREDICTION) {
             if (launcher.getHotseatPredictionController() == null) {
                 return false;

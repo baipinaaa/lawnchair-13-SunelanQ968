@@ -32,7 +32,7 @@ import com.android.launcher3.appprediction.AppsDividerView;
 import com.android.launcher3.hybridhotseat.HotseatPredictionController;
 import com.android.launcher3.statemanager.StateManager;
 import com.android.launcher3.statemanager.StateManager.StateListener;
-import com.android.launcher3.uioverrides.QuickstepLauncher;
+import com.android.launcher3.uioverrides.QuickstepLauncherAosp;
 import com.android.launcher3.util.DisplayController;
 import com.android.launcher3.util.OnboardingPrefs;
 import com.android.quickstep.views.AllAppsEduView;
@@ -40,9 +40,9 @@ import com.android.quickstep.views.AllAppsEduView;
 /**
  * Extends {@link OnboardingPrefs} for quickstep-specific onboarding data.
  */
-public class QuickstepOnboardingPrefs extends OnboardingPrefs<QuickstepLauncher> {
+public class QuickstepOnboardingPrefs extends OnboardingPrefs<QuickstepLauncherAosp> {
 
-    public QuickstepOnboardingPrefs(QuickstepLauncher launcher, SharedPreferences sharedPrefs) {
+    public QuickstepOnboardingPrefs(QuickstepLauncherAosp launcher, SharedPreferences sharedPrefs) {
         super(launcher, sharedPrefs);
 
         StateManager<LauncherState> stateManager = launcher.getStateManager();

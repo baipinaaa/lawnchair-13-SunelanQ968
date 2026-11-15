@@ -40,7 +40,7 @@ import com.android.launcher3.LauncherSettings;
 import com.android.launcher3.R;
 import com.android.launcher3.anim.PendingAnimation;
 import com.android.launcher3.model.data.WorkspaceItemInfo;
-import com.android.launcher3.uioverrides.QuickstepLauncher;
+import com.android.launcher3.uioverrides.QuickstepLauncherAosp;
 import com.android.quickstep.OverviewCommandHelper;
 import com.android.quickstep.OverviewComponentObserver;
 import com.android.quickstep.RecentsAnimationCallbacks;
@@ -57,14 +57,14 @@ import com.android.systemui.shared.system.ActivityManagerWrapper;
 /** Transitions app from fullscreen to stage split when triggered from keyboard shortcuts. */
 public class SplitWithKeyboardShortcutController {
 
-    private final QuickstepLauncher mLauncher;
+    private final QuickstepLauncherAosp mLauncher;
     private final SplitSelectStateController mController;
     private final OverviewComponentObserver mOverviewComponentObserver;
 
     private final int mSplitPlaceholderSize;
     private final int mSplitPlaceholderInset;
 
-    public SplitWithKeyboardShortcutController(QuickstepLauncher launcher,
+    public SplitWithKeyboardShortcutController(QuickstepLauncherAosp launcher,
             SplitSelectStateController controller) {
         mLauncher = launcher;
         mController = controller;

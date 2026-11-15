@@ -53,7 +53,7 @@ import com.android.launcher3.config.FeatureFlags;
 import com.android.launcher3.anim.AnimatorPlaybackController;
 import com.android.launcher3.statemanager.StatefulActivity;
 import com.android.launcher3.taskbar.unfold.NonDestroyableScopedUnfoldTransitionProgressProvider;
-import com.android.launcher3.uioverrides.QuickstepLauncher;
+import com.android.launcher3.uioverrides.QuickstepLauncherAosp;
 import com.android.launcher3.util.DisplayController;
 import com.android.launcher3.util.NavigationMode;
 import com.android.launcher3.util.SettingsCache;
@@ -323,8 +323,8 @@ public class TaskbarManager {
      */
     private UnfoldTransitionProgressProvider getUnfoldTransitionProgressProviderForActivity(
             StatefulActivity activity) {
-        if (activity instanceof QuickstepLauncher) {
-            return ((QuickstepLauncher) activity).getUnfoldTransitionProgressProvider();
+        if (activity instanceof QuickstepLauncherAosp) {
+            return ((QuickstepLauncherAosp) activity).getUnfoldTransitionProgressProvider();
         }
         return null;
     }
@@ -334,11 +334,11 @@ public class TaskbarManager {
      * is active.
      */
     private TaskbarUIController createTaskbarUIControllerForActivity(StatefulActivity activity) {
-        if (activity instanceof QuickstepLauncher) {
+        if (activity instanceof QuickstepLauncherAosp) {
             if (mTaskbarActivityContext.getPackageManager().hasSystemFeature(FEATURE_PC)) {
-                return new DesktopTaskbarUIController((QuickstepLauncher) activity);
+                return new DesktopTaskbarUIController((QuickstepLauncherAosp) activity);
             }
-            return new LauncherTaskbarUIController((QuickstepLauncher) activity);
+            return new LauncherTaskbarUIController((QuickstepLauncherAosp) activity);
         }
         if (activity instanceof RecentsActivity) {
             return new FallbackTaskbarUIController((RecentsActivity) activity);

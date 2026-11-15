@@ -22,7 +22,7 @@ import android.view.View;
 import com.android.launcher3.Launcher;
 import com.android.launcher3.LauncherState;
 import com.android.launcher3.statemanager.StatefulActivity;
-import com.android.launcher3.uioverrides.QuickstepLauncher;
+import com.android.launcher3.uioverrides.QuickstepLauncherAosp;
 
 /**
  * Controls the visibility of the workspace and the resumed / paused state when desktop mode
@@ -149,7 +149,7 @@ public class DesktopVisibilityController {
             Log.d(TAG, "markLauncherPaused");
         }
         StatefulActivity<LauncherState> activity =
-                QuickstepLauncher.ACTIVITY_TRACKER.getCreatedActivity();
+                QuickstepLauncherAosp.ACTIVITY_TRACKER.getCreatedActivity();
         if (activity != null) {
             activity.setPaused();
         }
@@ -160,7 +160,7 @@ public class DesktopVisibilityController {
             Log.d(TAG, "markLauncherResumed");
         }
         StatefulActivity<LauncherState> activity =
-                QuickstepLauncher.ACTIVITY_TRACKER.getCreatedActivity();
+                QuickstepLauncherAosp.ACTIVITY_TRACKER.getCreatedActivity();
         // Check activity state before calling setResumed(). Launcher may have been actually
         // paused (eg fullscreen task moved to front).
         // In this case we should not mark the activity as resumed.

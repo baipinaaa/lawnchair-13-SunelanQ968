@@ -189,7 +189,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-public class QuickstepLauncher extends Launcher {
+public class QuickstepLauncherAosp extends Launcher {
     public static final boolean ENABLE_PIP_KEEP_CLEAR_ALGORITHM =
             SystemProperties.getBoolean("persist.wm.debug.enable_pip_keep_clear_algorithm", true);
     public static final boolean GO_LOW_RAM_RECENTS_ENABLED = false;
@@ -347,7 +347,7 @@ public class QuickstepLauncher extends Launcher {
     }
     protected void onItemClicked(View view) {
         if (!mSplitToWorkspaceController.handleSecondAppSelectionForSplit(view)) {
-            QuickstepLauncher.super.getItemOnClickListener().onClick(view);
+            QuickstepLauncherAosp.super.getItemOnClickListener().onClick(view);
         }
     }
     @Override
@@ -364,7 +364,7 @@ public class QuickstepLauncher extends Launcher {
         shortcuts.add(INSTALL);
         return shortcuts.stream();
     }
-    private List<SystemShortcut.Factory<QuickstepLauncher>> getSplitShortcuts() {
+    private List<SystemShortcut.Factory<QuickstepLauncherAosp>> getSplitShortcuts() {
         if (!ENABLE_SPLIT_FROM_WORKSPACE.get() || !mDeviceProfile.isTablet) {
             return Collections.emptyList();
         }
@@ -373,7 +373,7 @@ public class QuickstepLauncher extends Launcher {
         List<SplitPositionOption> positions =
                 recentsView.getPagedOrientationHandler().getSplitPositionOptions(
                         mDeviceProfile);
-        List<SystemShortcut.Factory<QuickstepLauncher>> splitShortcuts = new ArrayList<>();
+        List<SystemShortcut.Factory<QuickstepLauncherAosp>> splitShortcuts = new ArrayList<>();
         for (SplitPositionOption position : positions) {
             splitShortcuts.add(getSplitSelectShortcutByPosition(position));
         }
@@ -1105,7 +1105,7 @@ public class QuickstepLauncher extends Launcher {
         super.dispatchDeviceProfileChanged();
         SystemUiProxy.INSTANCE.get(this).setLauncherAppIconSize(mDeviceProfile.iconSizePx);
         if (mTaskbarManager != null) {
-            mTaskbarManager.debugWhyTaskbarNotDestroyed("QuickstepLauncher#onDeviceProfileChanged");
+            mTaskbarManager.debugWhyTaskbarNotDestroyed("QuickstepLauncherAosp#onDeviceProfileChanged");
         }
     }
     /**

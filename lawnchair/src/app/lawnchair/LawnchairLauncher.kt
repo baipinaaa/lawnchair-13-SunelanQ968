@@ -72,7 +72,7 @@ import com.android.launcher3.allapps.ActivityAllAppsContainerView
 import com.android.launcher3.allapps.search.SearchAdapterProvider
 import com.android.launcher3.popup.SystemShortcut
 import com.android.launcher3.statemanager.StateManager
-import com.android.launcher3.uioverrides.QuickstepLauncher
+import com.android.launcher3.uioverrides.QuickstepLauncherAosp
 import com.android.launcher3.uioverrides.states.OverviewState
 import com.android.launcher3.util.SystemUiController.UI_STATE_BASE_WINDOW
 import com.android.launcher3.util.Themes
@@ -92,8 +92,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
-class LawnchairLauncher :
-    QuickstepLauncher(),
+open class LawnchairLauncher :
+    QuickstepLauncherAosp(),
     LifecycleOwner,
     SavedStateRegistryOwner,
     ActivityResultRegistryOwner,

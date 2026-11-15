@@ -45,7 +45,7 @@ import com.android.launcher3.Utilities;
 import com.android.launcher3.anim.AnimatedFloat;
 import com.android.launcher3.anim.AnimatorListeners;
 import com.android.launcher3.statemanager.StateManager;
-import com.android.launcher3.uioverrides.QuickstepLauncher;
+import com.android.launcher3.uioverrides.QuickstepLauncherAosp;
 import com.android.launcher3.util.MultiPropertyFactory.MultiProperty;
 import com.android.quickstep.RecentsAnimationCallbacks;
 import com.android.quickstep.RecentsAnimationController;
@@ -141,7 +141,7 @@ public class TaskbarLauncherStateController {
     private AnimatedFloat mTaskbarAlpha;
     private AnimatedFloat mTaskbarCornerRoundness;
     private MultiProperty mIconAlphaForHome;
-    private QuickstepLauncher mLauncher;
+    private QuickstepLauncherAosp mLauncher;
 
     private Integer mPrevState;
     private int mState;
@@ -210,7 +210,7 @@ public class TaskbarLauncherStateController {
                 }
             };
 
-    public void init(TaskbarControllers controllers, QuickstepLauncher launcher) {
+    public void init(TaskbarControllers controllers, QuickstepLauncherAosp launcher) {
         mCanSyncViews = false;
 
         mControllers = controllers;

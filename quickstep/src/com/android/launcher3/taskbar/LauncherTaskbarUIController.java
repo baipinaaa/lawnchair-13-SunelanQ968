@@ -43,7 +43,7 @@ import com.android.launcher3.anim.AnimatedFloat;
 import com.android.launcher3.logging.InstanceId;
 import com.android.launcher3.logging.InstanceIdSequence;
 import com.android.launcher3.model.data.ItemInfo;
-import com.android.launcher3.uioverrides.QuickstepLauncher;
+import com.android.launcher3.uioverrides.QuickstepLauncherAosp;
 import com.android.launcher3.util.DisplayController;
 import com.android.launcher3.util.MultiPropertyFactory;
 import com.android.launcher3.util.OnboardingPrefs;
@@ -74,7 +74,7 @@ public class LauncherTaskbarUIController extends TaskbarUIController {
             new MultiPropertyFactory<>(mTaskbarInAppDisplayProgress,
                     AnimatedFloat.VALUE, DISPLAY_PROGRESS_COUNT, Float::max);
 
-    private final QuickstepLauncher mLauncher;
+    private final QuickstepLauncherAosp mLauncher;
 
     private final DeviceProfile.OnDeviceProfileChangeListener mOnDeviceProfileChangeListener =
             dp -> {
@@ -88,7 +88,7 @@ public class LauncherTaskbarUIController extends TaskbarUIController {
     private final TaskbarLauncherStateController
             mTaskbarLauncherStateController = new TaskbarLauncherStateController();
 
-    public LauncherTaskbarUIController(QuickstepLauncher launcher) {
+    public LauncherTaskbarUIController(QuickstepLauncherAosp launcher) {
         mLauncher = launcher;
     }
 

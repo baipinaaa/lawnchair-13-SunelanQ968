@@ -17,14 +17,14 @@
 package com.android.launcher3;
 
 import com.android.launcher3.popup.SystemShortcut;
-import com.android.launcher3.uioverrides.QuickstepLauncher;
+import com.android.launcher3.uioverrides.QuickstepLauncherAosp;
 
 import java.util.stream.Stream;
 
 /**
  * The Launcher variant used for Android Go Edition
  */
-public class Launcher3QuickStepGo extends QuickstepLauncher {
+public class Launcher3QuickStepGo extends QuickstepLauncherAosp {
     private static final String TAG = "Launcher3QuickStepGo";
 
     @Override

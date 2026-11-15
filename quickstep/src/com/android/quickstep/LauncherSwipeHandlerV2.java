@@ -40,7 +40,7 @@ import com.android.launcher3.LauncherState;
 import com.android.launcher3.anim.AnimatorPlaybackController;
 import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.states.StateAnimationConfig;
-import com.android.launcher3.uioverrides.QuickstepLauncher;
+import com.android.launcher3.uioverrides.QuickstepLauncherAosp;
 import com.android.launcher3.util.ObjectWrapper;
 import com.android.launcher3.views.FloatingIconView;
 import com.android.launcher3.views.FloatingView;
@@ -58,7 +58,7 @@ import java.util.ArrayList;
  * Temporary class to allow easier refactoring
  */
 public class LauncherSwipeHandlerV2 extends
-        AbsSwipeUpHandler<QuickstepLauncher, RecentsView, LauncherState> {
+        AbsSwipeUpHandler<QuickstepLauncherAosp, RecentsView, LauncherState> {
 
     public LauncherSwipeHandlerV2(Context context, RecentsAnimationDeviceState deviceState,
             TaskAnimationManager taskAnimationManager, GestureState gestureState, long touchTimeMs,

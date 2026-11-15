@@ -43,7 +43,7 @@ import com.android.launcher3.AbstractFloatingView;
 import com.android.launcher3.QuickstepTransitionManager;
 import com.android.launcher3.R;
 import com.android.launcher3.Utilities;
-import com.android.launcher3.uioverrides.QuickstepLauncher;
+import com.android.launcher3.uioverrides.QuickstepLauncherAosp;
 import com.android.quickstep.util.RectFSpringAnim;
 import com.android.systemui.shared.system.QuickStepContract;
 
@@ -74,7 +74,7 @@ public class LauncherBackAnimationController {
     private final RectF mCancelRect = new RectF();
     /** The current window position. */
     private final RectF mCurrentRect = new RectF();
-    private final QuickstepLauncher mLauncher;
+    private final QuickstepLauncherAosp mLauncher;
     private final int mWindowScaleMarginX;
     /** Max window translation in the Y axis. */
     private final int mWindowMaxDeltaY;
@@ -93,7 +93,7 @@ public class LauncherBackAnimationController {
     private BackProgressAnimator mProgressAnimator;
 
     public LauncherBackAnimationController(
-            QuickstepLauncher launcher,
+            QuickstepLauncherAosp launcher,
             QuickstepTransitionManager quickstepTransitionManager) {
         mLauncher = launcher;
         mQuickstepTransitionManager = quickstepTransitionManager;

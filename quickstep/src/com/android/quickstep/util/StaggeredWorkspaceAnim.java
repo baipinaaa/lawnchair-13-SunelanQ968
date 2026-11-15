@@ -49,7 +49,7 @@ import com.android.launcher3.anim.SpringAnimationBuilder;
 import com.android.launcher3.celllayout.CellLayoutLayoutParams;
 import com.android.launcher3.statehandlers.DepthController;
 import com.android.launcher3.states.StateAnimationConfig;
-import com.android.launcher3.uioverrides.QuickstepLauncher;
+import com.android.launcher3.uioverrides.QuickstepLauncherAosp;
 import com.android.launcher3.util.DynamicResource;
 import com.android.quickstep.views.RecentsView;
 import com.android.systemui.plugins.ResourceProvider;
@@ -295,11 +295,11 @@ public class StaggeredWorkspaceAnim {
     }
 
     private void addDepthAnimationForState(Launcher launcher, LauncherState state, long duration) {
-        if (!(launcher instanceof QuickstepLauncher)) {
+        if (!(launcher instanceof QuickstepLauncherAosp)) {
             return;
         }
         PendingAnimation builder = new PendingAnimation(duration);
-        DepthController depthController = ((QuickstepLauncher) launcher).getDepthController();
+        DepthController depthController = ((QuickstepLauncherAosp) launcher).getDepthController();
         depthController.setStateWithAnimation(state, new StateAnimationConfig(), builder);
         mAnimators.play(builder.buildAnim());
     }

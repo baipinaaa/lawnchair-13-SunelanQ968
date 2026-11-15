@@ -21,7 +21,7 @@ import android.os.Build;
 import android.os.CancellationSignal;
 import android.view.RemoteAnimationTarget;
 
-import com.android.launcher3.uioverrides.QuickstepLauncher;
+import com.android.launcher3.uioverrides.QuickstepLauncherAosp;
 import com.android.quickstep.util.ActivityInitListener;
 import com.android.quickstep.util.RemoteAnimationProvider;
 
@@ -45,7 +45,7 @@ public class LauncherInitListener extends ActivityInitListener<Launcher> {
     public boolean handleInit(Launcher launcher, boolean alreadyOnHome) {
         if (mRemoteAnimationProvider != null) {
             QuickstepTransitionManager appTransitionManager =
-                    ((QuickstepLauncher) launcher).getAppTransitionManager();
+                    ((QuickstepLauncherAosp) launcher).getAppTransitionManager();
 
             // Set a one-time animation provider. After the first call, this will get cleared.
             // TODO: Probably also check the intended target id.

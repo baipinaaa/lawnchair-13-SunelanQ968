@@ -61,9 +61,9 @@ import com.android.quickstep.views.RecentsView;
 public abstract class BaseRecentsViewStateController<T extends RecentsView>
         implements StateHandler<LauncherState> {
     protected final T mRecentsView;
-    protected final QuickstepLauncher mLauncher;
+    protected final QuickstepLauncherAosp mLauncher;
 
-    public BaseRecentsViewStateController(@NonNull QuickstepLauncher launcher) {
+    public BaseRecentsViewStateController(@NonNull QuickstepLauncherAosp launcher) {
         mLauncher = launcher;
         mRecentsView = launcher.getOverviewPanel();
     }
