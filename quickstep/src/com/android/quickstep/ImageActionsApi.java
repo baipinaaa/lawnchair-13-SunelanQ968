@@ -123,8 +123,8 @@ public class ImageActionsApi {
      */
     public void saveScreenshot(Bitmap screenshot, Rect screenshotBounds,
             Insets visibleInsets, Task.TaskKey task) {
-        ImageActionUtils.saveScreenshot(mSystemUiProxy, screenshot, screenshotBounds, visibleInsets,
-                task);
+        ImageActionUtils.saveScreenshot(mContext, mSystemUiProxy, screenshot, screenshotBounds,
+                visibleInsets, task);
     }
 
     /**

@@ -42,9 +42,13 @@ import android.graphics.Insets;
 import android.graphics.Picture;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.content.ContentValues;
 import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.WorkerThread;
 import androidx.core.content.FileProvider;
@@ -58,6 +62,10 @@ import com.android.systemui.shared.recents.model.Task;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
@@ -76,8 +84,8 @@ public class ImageActionUtils {
     /**
      * Saves screenshot to location determine by SystemUiProxy
      */
-    public static void saveScreenshot(SystemUiProxy systemUiProxy, Bitmap screenshot,
-            Rect screenshotBounds, Insets visibleInsets, Task.TaskKey task) {
+    public static void saveScreenshot(Context context, SystemUiProxy systemUiProxy,
+            Bitmap screenshot, Rect screenshotBounds, Insets visibleInsets, Task.TaskKey task) {
         try {
             ScreenshotRequest request =
                     new ScreenshotRequest.Builder(TAKE_SCREENSHOT_PROVIDED_IMAGE, SCREENSHOT_OVERVIEW)
@@ -90,10 +98,61 @@ public class ImageActionUtils {
                     .build();
             systemUiProxy.takeScreenshot(request);
         } catch (Throwable t) {
-            // Android 13 (T) 既没有 ScreenshotRequest.Builder，也没有对应的 SystemUI 接口
+            // Android 13 (T) 既没有 ScreenshotRequest.Builder，也没有对应的 SystemUI 接口，
+            // 退化为直接把任务截图写入相册。
             Log.w(TAG, "ScreenshotRequest API unavailable on this Android version", t);
-            systemUiProxy.takeScreenshotLegacy();
+            saveScreenshotToMediaStore(context, screenshot);
         }
+    }
+
+    private static void saveScreenshotToMediaStore(Context context, Bitmap screenshot) {
+        if (context == null || screenshot == null) {
+            Log.w(TAG, "saveScreenshotToMediaStore: context or bitmap is null");
+            return;
+        }
+        final Context appContext = context.getApplicationContext();
+        final Bitmap bitmap = screenshot.copy(Bitmap.Config.ARGB_8888, false);
+        THREAD_POOL_EXECUTOR.execute(() -> {
+            Uri uri = null;
+            try {
+                final String name = BASE_NAME + new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
+                        .format(new Date()) + ".png";
+                final ContentValues values = new ContentValues();
+                values.put(MediaStore.Images.Media.DISPLAY_NAME, name);
+                values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
+                values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
+                values.put(MediaStore.Images.Media.RELATIVE_PATH,
+                        Environment.DIRECTORY_PICTURES + "/Screenshots");
+                values.put(MediaStore.Images.Media.IS_PENDING, 1);
+                uri = appContext.getContentResolver().insert(
+                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+                if (uri == null) {
+                    Log.w(TAG, "saveScreenshotToMediaStore: insert returned null");
+                    return;
+                }
+                try (OutputStream os = appContext.getContentResolver().openOutputStream(uri)) {
+                    if (os == null || !bitmap.compress(Bitmap.CompressFormat.PNG, 100, os)) {
+                        Log.w(TAG, "saveScreenshotToMediaStore: compress failed");
+                        return;
+                    }
+                }
+                final ContentValues publish = new ContentValues();
+                publish.put(MediaStore.Images.Media.IS_PENDING, 0);
+                appContext.getContentResolver().update(uri, publish, null, null);
+                MAIN_EXECUTOR.execute(() -> Toast.makeText(appContext, "截图已保存到相册",
+                        Toast.LENGTH_SHORT).show());
+            } catch (Throwable t) {
+                Log.w(TAG, "saveScreenshotToMediaStore failed", t);
+                if (uri != null) {
+                    try {
+                        appContext.getContentResolver().delete(uri, null, null);
+                    } catch (Throwable ignored) {
+                    }
+                }
+            } finally {
+                bitmap.recycle();
+            }
+        });
     }
 
     /**
